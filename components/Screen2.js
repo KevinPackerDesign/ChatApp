@@ -7,36 +7,91 @@ import {
   StyleSheet,
 } from "react-native";
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import firebase from "firebase";
 
 export default class Screen2 extends React.Component {
   constructor() {
     super();
     this.state = {
       messages: [],
+      uid: 0,
+      user: {
+        _id: "",
+        name: "",
+        avatar: "",
+      },
+      isConnected: false,
     };
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBr4yau5Da4bWowcQGDXmGwplnaPhm8shE",
+      authDomain: "chatapp-e1ac5.firebaseapp.com",
+      projectId: "chatapp-e1ac5",
+      storageBucket: "chatapp-e1ac5.appspot.com",
+      messagingSenderId: "745622530335",
+      appId: "1:745622530335:web:48a31625cf0a0ea0a3282a",
+      measurementId: "G-30BR6JSJNX",
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    this.referenceChatMessages = firebase.firestore().collection("messages");
+    this.refMsgsUser = null;
+  }
+
+  onCollectionUpdate = (querySnapshot) => {
+    const messages = [];
+    // go through each document
+    querySnapshot.forEach((doc) => {
+      // get the QueryDocumentSnapshot's data
+      var data = doc.data();
+      messages.push({
+        _id: data._id,
+        text: data.text,
+        createdAt: data.createdAt.toDate(),
+        user: {
+          _id: data.user._id,
+          name: data.user.name,
+          avatar: data.user.avatar,
+        },
+      });
+    });
+    this.setState({
+      messages: messages,
+    });
+  };
+
+  addMessage() {
+    this.referenceMessage.add({
+      _id: data.user._id,
+      name: data.user.name,
+      avatar: data.user.avatar,
+    });
   }
 
   componentDidMount() {
-    this.setState({
-      messages: [
-        {
-          _id: 1,
-          text: "Hello developer",
-          createdAt: new Date(),
-          user: {
-            _id: 2,
-            name: "React Native",
-            avatar: "https://placeimg.com/140/140/any",
-          },
-        },
-        {
-          _id: 2,
-          text: "This is a system message",
-          createdAt: new Date(),
-          system: true,
-        },
-      ],
+    this.authUnsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) {
+        firebase.auth().signInAnonymously();
+      }
+      this.setState({
+        uid: user.uid,
+        messages: [],
+      });
+
+      this.referenceChatMessages = firebase
+        .firestore()
+        .collection("messages")
+        .where("uid", "==", this.state.uid);
+      this.unsubscribe = this.referenceChatMessages
+        .orderBy("createdAt", "desc")
+        .onSnapshot(this.onCollectionUpdate);
     });
+  }
+  componentWillUnmout() {
+    this.authUnsubscribe();
+    this.unsubscribe();
   }
 
   onSend(messages = []) {
