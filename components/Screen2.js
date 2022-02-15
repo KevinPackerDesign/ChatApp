@@ -7,16 +7,17 @@ import {
   StyleSheet,
 } from "react-native";
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
-import firebase from "firebase";
+import * as firebase from "firebase";
+import "firebase/firestore";
 
 export default class Screen2 extends React.Component {
   constructor() {
     super();
     this.state = {
       messages: [],
-      uid: 0,
+      _id: 0,
       user: {
-        _id: "",
+        uid: "",
         name: "",
         avatar: "",
       },
@@ -37,6 +38,7 @@ export default class Screen2 extends React.Component {
       firebase.initializeApp(firebaseConfig);
     }
     this.referenceChatMessages = firebase.firestore().collection("messages");
+    console.log(this.referenceChatMessages);
     this.refMsgsUser = null;
   }
 
@@ -51,7 +53,7 @@ export default class Screen2 extends React.Component {
         text: data.text,
         createdAt: data.createdAt.toDate(),
         user: {
-          _id: data.user._id,
+          uid: data.user.uid,
           name: data.user.name,
           avatar: data.user.avatar,
         },
@@ -63,10 +65,16 @@ export default class Screen2 extends React.Component {
   };
 
   addMessage() {
-    this.referenceMessage.add({
-      _id: data.user._id,
-      name: data.user.name,
-      avatar: data.user.avatar,
+    let data = this.state.messages[0];
+    this.referenceChatMessages.add({
+      _id: data._id,
+      text: data.text,
+      createdAt: data.createdAt.toDate(),
+      user: {
+        uid: data.user.uid,
+        name: data.user.name,
+        avatar: data.user.avatar,
+      },
     });
   }
 
@@ -80,10 +88,6 @@ export default class Screen2 extends React.Component {
         messages: [],
       });
 
-      this.referenceChatMessages = firebase
-        .firestore()
-        .collection("messages")
-        .where("uid", "==", this.state.uid);
       this.unsubscribe = this.referenceChatMessages
         .orderBy("createdAt", "desc")
         .onSnapshot(this.onCollectionUpdate);
@@ -98,6 +102,7 @@ export default class Screen2 extends React.Component {
     this.setState((previousState) => ({
       messages: GiftedChat.append(previousState.messages, messages),
     }));
+    this.addMessage();
   }
 
   renderBubble(props) {
