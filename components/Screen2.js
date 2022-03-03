@@ -62,20 +62,11 @@ export default class Screen2 extends React.Component {
     this.setState({
       messages: messages,
     });
+    console.log(messages, "hello world");
   };
 
-  addMessage() {
-    let data = this.state.messages[0];
-    this.referenceChatMessages.add({
-      _id: data._id,
-      text: data.text,
-      createdAt: data.createdAt.toDate(),
-      user: {
-        uid: data.user.uid,
-        name: data.user.name,
-        avatar: data.user.avatar,
-      },
-    });
+  addMessage(message) {
+    this.referenceChatMessages.add(message);
   }
 
   componentDidMount() {
@@ -102,7 +93,7 @@ export default class Screen2 extends React.Component {
     this.setState((previousState) => ({
       messages: GiftedChat.append(previousState.messages, messages),
     }));
-    this.addMessage();
+    this.addMessage(messages[0]);
   }
 
   renderBubble(props) {
@@ -133,11 +124,14 @@ export default class Screen2 extends React.Component {
         }}
       >
         <GiftedChat
+          style={StyleSheet.giftedChat}
           renderBubble={this.renderBubble.bind(this)}
           messages={this.state.messages}
           onSend={(messages) => this.onSend(messages)}
           user={{
-            _id: 1,
+            _id: this.state.uid,
+            name: name,
+            avatar: "https://placeimg.com/140/140/any",
           }}
         />
         {Platform.OS === "android" ? (
