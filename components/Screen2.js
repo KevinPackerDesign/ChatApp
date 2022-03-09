@@ -17,7 +17,7 @@ export default class Screen2 extends React.Component {
       messages: [],
       _id: 0,
       user: {
-        uid: "",
+        _id: "",
         name: "",
         avatar: "",
       },
@@ -53,7 +53,7 @@ export default class Screen2 extends React.Component {
         text: data.text,
         createdAt: data.createdAt.toDate(),
         user: {
-          uid: data.user.uid,
+          _id: data.user._id,
           name: data.user.name,
           avatar: data.user.avatar,
         },
@@ -75,7 +75,7 @@ export default class Screen2 extends React.Component {
         firebase.auth().signInAnonymously();
       }
       this.setState({
-        uid: user.uid,
+        _id: user._id,
         messages: [],
       });
 
@@ -90,6 +90,7 @@ export default class Screen2 extends React.Component {
   }
 
   onSend(messages = []) {
+    console.log(messages[0]);
     this.setState((previousState) => ({
       messages: GiftedChat.append(previousState.messages, messages),
     }));
@@ -103,6 +104,9 @@ export default class Screen2 extends React.Component {
         wrapperStyle={{
           right: {
             backgroundColor: "#000",
+          },
+          left: {
+            backgroundColor: "green",
           },
         }}
       />
@@ -129,7 +133,7 @@ export default class Screen2 extends React.Component {
           messages={this.state.messages}
           onSend={(messages) => this.onSend(messages)}
           user={{
-            _id: this.state.uid,
+            _id: this.state._id,
             name: name,
             avatar: "https://placeimg.com/140/140/any",
           }}
