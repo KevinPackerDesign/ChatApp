@@ -38,7 +38,7 @@ export default class Screen2 extends React.Component {
       firebase.initializeApp(firebaseConfig);
     }
     this.referenceChatMessages = firebase.firestore().collection("messages");
-    console.log(this.referenceChatMessages);
+
     this.refMsgsUser = null;
   }
 
@@ -62,7 +62,6 @@ export default class Screen2 extends React.Component {
     this.setState({
       messages: messages,
     });
-    console.log(messages, "hello world");
   };
 
   addMessage(message) {
@@ -74,8 +73,9 @@ export default class Screen2 extends React.Component {
       if (!user) {
         firebase.auth().signInAnonymously();
       }
+
       this.setState({
-        _id: user._id,
+        _id: user.uid,
         messages: [],
       });
 
@@ -90,7 +90,6 @@ export default class Screen2 extends React.Component {
   }
 
   onSend(messages = []) {
-    console.log(messages[0]);
     this.setState((previousState) => ({
       messages: GiftedChat.append(previousState.messages, messages),
     }));
