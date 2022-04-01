@@ -6,6 +6,8 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
+import AsyncStorage from "@react-native-community/async-storage";
 import { GiftedChat, Bubble } from "react-native-gifted-chat";
 import * as firebase from "firebase";
 import "firebase/firestore";
@@ -64,11 +66,42 @@ export default class Screen2 extends React.Component {
     });
   };
 
+  async saveMessages() {
+    try {
+      await AsyncStorage.setItem(
+        "messages",
+        JSON.stringify(this.state.messages)
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   addMessage(message) {
     this.referenceChatMessages.add(message);
   }
 
+  async getMessages() {
+    let messages = "";
+    try {
+      messages = (await AsyncStorage.getItem("messages")) || [];
+      this.setState({
+        messages: JSON.parse(messages),
+      });
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   componentDidMount() {
+    this.getMessages();
+    NetInfo.fetch().then((connection) => {
+      if (connection.isConnected) {
+        console.log("online");
+      } else {
+        console.log("offline");
+      }
+    });
     this.authUnsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
       if (!user) {
         firebase.auth().signInAnonymously();
